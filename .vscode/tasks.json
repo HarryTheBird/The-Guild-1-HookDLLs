@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+
+  "tasks": [
+     {
+      "label": "Build ws2_32 proxy",
+      "type": "shell",
+      "command": "cl",
+      "args": [
+        "/LD","src\\ws2_32_proxy.c","/Iinclude",
+        "Ws2_32.lib","/link","/DEF:ws2_32.def","/OUT:bin\\ws2_32.dll"
+      ],
+      "options": {"cwd":"${workspaceFolder}"},
+      "group": {"kind":"build","isDefault":true},
+      "problemMatcher":["$msCompile"]
+    },
+    {
+      "label": "Build kernel32 proxy",
+      "type": "shell",
+      "command": "cl",
+      "args": [
+        "/LD","src\\kernel32_proxy.c","/Iinclude",
+        "kernel32.lib","/link","/DEF:kernel32.def","/OUT:bin\\kernel32.dll"
+      ],
+      "options": {"cwd":"${workspaceFolder}"},
+      "group":{"kind":"build"},
+      "problemMatcher":["$msCompile"]
+    },    
+      {
+      "label": "Build All Proxies",
+      "dependsOn": [
+        "Build ws2_32 proxy",
+        "Build kernel32 proxy"
+      ],
+      "group": { "kind": "build", "isDefault": false }}
+  ]
+}

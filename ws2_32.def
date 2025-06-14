@@ -1,0 +1,19 @@
+LIBRARY "ws2_32.dll"
+EXPORTS
+    recv                @16
+    send                @19
+
+    accept              = accept            @1
+    bind                = bind              @2
+    closesocket         = closesocket       @3
+    htonl               = htonl             @8
+    htons               = htons             @9
+    ioctlsocket         = ioctlsocket       @10
+    listen              = listen            @13
+    sendto              = sendto            @20
+    setsockopt          = setsockopt        @21
+    shutdown            = shutdown          @22
+    socket              = socket            @23
+    WSAGetLastError     = WSAGetLastError   @111
+    WSAStartup          = WSAStartup        @115
+    WSACleanup          = WSACleanup        @116
