@@ -1,4 +1,6 @@
-# Proxy-DLL & Timeout-Fix für server.dll
+# Proxy-DLL & Timeout-Fix für server.dll von "Die Gilde Gold Edition 2.05"
+
+Steam-Community-Beitrag siehe hier: https://steamcommunity.com/sharedfiles/filedetails/?id=3497786584
 
 Dieses Repository enthält zwei Proxy-DLLs, mit denen Du die originale `server.dll` eines Multiplayer-Servers erweitern kannst, um:
 
