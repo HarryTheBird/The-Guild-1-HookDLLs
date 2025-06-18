@@ -3,7 +3,7 @@ setlocal
 pushd "%~dp0"
 
 REM ----- Konfiguration -----
-set "GAME_NAME=Europa1400Gold.exe"
+set "GAME_NAME=Europa1400Gold_TL.exe"
 set "GAME_PATH=%~dp0%GAME_NAME%"
 set "SERVER_DIR=%~dp0server"
 set "HOOK1=%SERVER_DIR%\hook_kernel32.dll"
