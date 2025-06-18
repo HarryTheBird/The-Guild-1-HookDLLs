@@ -3,7 +3,7 @@
 
   "tasks": [
       {
-      "label": "Build kernel32_proxy.dll",
+      "label": "Build hook_kernel32.dll",
       "type": "shell",
       "command": "cl.exe",
       "args": [
@@ -29,7 +29,7 @@
       "problemMatcher": ["$msCompile"]
     },
     {
-      "label": "Build ws2_32_proxy.dll",
+      "label": "Build hook_ws2_32.dll",
       "type": "shell",
       "command": "cl.exe",
       "args": [

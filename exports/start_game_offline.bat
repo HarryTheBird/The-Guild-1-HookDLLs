@@ -3,26 +3,29 @@ setlocal
 pushd "%~dp0"
 
 REM ----- Konfiguration -----
-set "STEAM_EXE=C:\Program Files (x86)\Steam\steam.exe"
-set "APPID=39520"
 set "GAME_NAME=Europa1400Gold.exe"
-set "GAME_DIR=C:\Program Files (x86)\Steam\steamapps\common\Europa 1400 The Guild - Gold Edition"
-set "GAME_PATH=%GAME_DIR%\%GAME_NAME%"
-set "SERVER_DIR=%GAME_DIR%\server"
+set "GAME_PATH=%~dp0%GAME_NAME%"
+set "SERVER_DIR=%~dp0server"
 set "HOOK1=%SERVER_DIR%\hook_kernel32.dll"
 set "HOOK2=%SERVER_DIR%\hook_ws2_32.dll"
 set "INJECTOR=%~dp0injector.exe"
 
-echo Starte Steam mit -applaunch %APPID%...
-start "" "%STEAM_EXE%" -applaunch %APPID%
+if not exist "%GAME_PATH%" (
+    echo ERROR: Spiel-Exe nicht gefunden: "%GAME_PATH%"
+    pause
+    popd & exit /b 1
+)
+
+echo Starte Spiel direkt...
+start "" "%GAME_PATH%"
 
 echo.
-echo Warte auf den Game-Prozess %GAME_NAME%...
-:WAIT_LOOP
+echo Warte auf den Prozess %GAME_NAME%...
+:WAIT_GAME
     tasklist /FI "IMAGENAME eq %GAME_NAME%" 2>NUL | find /I "%GAME_NAME%" >NUL
     if errorlevel 1 (
         timeout /t 1 >nul
-        goto WAIT_LOOP
+        goto WAIT_GAME
     )
 for /f "tokens=2 delims=," %%P in (
     'tasklist /FI "IMAGENAME eq %GAME_NAME%" /FO CSV /NH'
