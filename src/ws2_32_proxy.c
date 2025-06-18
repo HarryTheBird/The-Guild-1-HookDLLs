@@ -83,10 +83,15 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID _) {
         InitializeCriticalSection(&seqLock);
         InitializeCriticalSection(&logLock);
 
-        // Log-Datei im TEMP-Verzeichnis anlegen
+        // Log-Datei neben dieser DLL im server-Ordner anlegen
         wchar_t logPath[MAX_PATH];
-        GetTempPathW(MAX_PATH, logPath);
-        wcscat_s(logPath, MAX_PATH, L"\hook.log");
+        // 1) Hol den Pfad dieser DLL
+        GetModuleFileNameW(hinst, logPath, MAX_PATH);
+        // 2) Entferne den Dateinamen, bleib im Ordner „server\“
+        PathRemoveFileSpecW(logPath);
+        // 3) Hänge „\hook.log“ an
+        PathAppendW(logPath, L"\\hook.log");
+        // 4) Öffne oder erstelle die Datei
         logFile = CreateFileW(
             logPath, GENERIC_WRITE, FILE_SHARE_READ,
             NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL

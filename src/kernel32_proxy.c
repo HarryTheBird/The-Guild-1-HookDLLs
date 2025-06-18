@@ -31,6 +31,7 @@ static void load_real_kernel32(void) {
 // Hooked export of GetTickCount
 __declspec(dllexport)
 DWORD WINAPI GetTickCount(void) {
+    OutputDebugStringA("-> hooked GetTrickCount was used!\n");
     load_real_kernel32();
     // capture context to inspect return address
     CONTEXT ctx = {0};
