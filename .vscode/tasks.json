@@ -2,30 +2,56 @@
   "version": "2.0.0",
 
   "tasks": [
-     {
-      "label": "Build ws2_32 proxy",
+      {
+      "label": "Build kernel32_proxy.dll",
       "type": "shell",
-      "command": "cl",
+      "command": "cl.exe",
       "args": [
-        "/LD","src\\ws2_32_proxy.c","/Iinclude",
-        "Ws2_32.lib","/link","/DEF:ws2_32.def","/OUT:bin\\ws2_32.dll"
+        "/LD",                                      // erstellt eine DLL
+        "/EHsc",                                    // C++ Exceptions
+        // Source
+        "src\\kernel32_proxy.c",
+        // MinHook-Header
+        "/I", "${workspaceFolder}\\MinHook\\include",
+        // Linker-Aufruf
+        "/link",
+          "/LIBPATH:${workspaceFolder}\\MinHook\\lib",
+          "MinHook.x86.lib",
+          "kernel32.lib",
+          // DEF und Output
+          "/DEF:${workspaceFolder}\\kernel32.def",
+          "/OUT:${workspaceFolder}\\bin\\hook_kernel32.dll"
       ],
-      "options": {"cwd":"${workspaceFolder}"},
-      "group": {"kind":"build","isDefault":true},
-      "problemMatcher":["$msCompile"]
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$msCompile"]
     },
     {
-      "label": "Build kernel32 proxy",
+      "label": "Build ws2_32_proxy.dll",
       "type": "shell",
-      "command": "cl",
+      "command": "cl.exe",
       "args": [
-        "/LD","src\\kernel32_proxy.c","/Iinclude",
-        "kernel32.lib","/link","/DEF:kernel32.def","/OUT:bin\\kernel32.dll"
+        "/LD",
+        "/EHsc",
+        "src\\ws2_32_proxy.c",
+        "/I", "${workspaceFolder}\\MinHook\\include",
+        "/link",
+          "/LIBPATH:${workspaceFolder}\\MinHook\\lib",
+          "MinHook.x86.lib",
+          "Ws2_32.lib",
+          "Shlwapi.lib",
+          "User32.lib",
+          "/DEF:${workspaceFolder}\\ws2_32.def",
+          "/OUT:${workspaceFolder}\\bin\\hook_ws2_32.dll"
       ],
-      "options": {"cwd":"${workspaceFolder}"},
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
       "group":{"kind":"build"},
       "problemMatcher":["$msCompile"]
-    },    
+    },  
       {
       "label": "Build All Proxies",
       "dependsOn": [

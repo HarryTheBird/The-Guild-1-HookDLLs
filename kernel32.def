@@ -1,5 +1,6 @@
 LIBRARY "kernel32.dll"
 EXPORTS
+    GetTickCount        @253
     AllocConsole
     CloseHandle
     CompareStringA
@@ -38,7 +39,6 @@ EXPORTS
     GetStringTypeA
     GetStringTypeW
     GetSystemTime
-    GetTickCount
     GetTimeFormatA
     GetTimeZoneInformation
     GetVersion
