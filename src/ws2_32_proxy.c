@@ -53,7 +53,7 @@ static void initServerModuleRange(void) {
     if (GetModuleInformation(GetCurrentProcess(), hServ, &mi, sizeof(mi))) {
         serverBase = (uintptr_t)mi.lpBaseOfDll;
         serverSize = (size_t)mi.SizeOfImage;
-        LOG("[HOOK] server.dll at %p size %zu\n", (void*)mi.lpBaseOfDll, mi.SizeOfImage);
+        //LOG("[HOOK] server.dll at %p size %zu\n", (void*)mi.lpBaseOfDll, mi.SizeOfImage);
     }
 }
 
