@@ -1,7 +1,0 @@
-LIBRARY "server.dll"
-EXPORTS
-stamp
-functions
-names
-Exit
-Init
