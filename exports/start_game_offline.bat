@@ -6,8 +6,9 @@ REM ----- Konfiguration -----
 set "GAME_NAME=Europa1400Gold.exe"
 set "GAME_PATH=%~dp0%GAME_NAME%"
 set "SERVER_DIR=%~dp0server"
-set "HOOK1=%SERVER_DIR%\hook_kernel32.dll"
-set "HOOK2=%SERVER_DIR%\hook_ws2_32.dll"
+set "HOOK1=%SERVER_DIR%\hook_server.dll"
+set "HOOK2=%SERVER_DIR%\hook_kernel32.dll"
+set "HOOK3=%SERVER_DIR%\hook_ws2_32.dll"
 set "INJECTOR=%~dp0injector.exe"
 
 if not exist "%GAME_PATH%" (
@@ -33,8 +34,8 @@ for /f "tokens=2 delims=," %%P in (
 
 echo Gefunden: PID %PID%
 echo Injiziere Hooks...
-echo   %INJECTOR% %PID% "%HOOK1%" "%HOOK2%"
-"%INJECTOR%" %PID% "%HOOK1%" "%HOOK2%"
+echo   %INJECTOR% %PID% "%HOOK1%" "%HOOK2%" "%HOOK3%" 
+"%INJECTOR%" %PID% "%HOOK1%" "%HOOK2%" "%HOOK3%" 
 
 pause
 popd

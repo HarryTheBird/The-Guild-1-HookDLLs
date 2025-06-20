@@ -6,81 +6,100 @@
 #include <ctype.h>
 
 // Prüft, ob ein String nur Ziffern enthält
-bool isNumber(const char *s) {
+static bool isNumber(const char *s) {
     if (!s || !*s) return false;
-    for (; *s; ++s) {
-        if (!isdigit((unsigned char)*s)) return false;
-    }
+    for (; *s; ++s) if (!isdigit((unsigned char)*s)) return false;
     return true;
 }
 
-BOOL InjectDLL(HANDLE hProc, const char* dllPath) {
+// Injiziert eine DLL in den Zielprozess
+static BOOL InjectDLL(HANDLE hProc, const char* dllPath) {
     size_t len = strlen(dllPath) + 1;
     LPVOID remote = VirtualAllocEx(hProc, NULL, len, MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
     if (!remote) return FALSE;
-    if (!WriteProcessMemory(hProc, remote, dllPath, len, NULL)) return FALSE;
+    if (!WriteProcessMemory(hProc, remote, dllPath, len, NULL)) {
+        VirtualFreeEx(hProc, remote, 0, MEM_RELEASE);
+        return FALSE;
+    }
     FARPROC loadLib = GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
-    if (!loadLib) return FALSE;
-    HANDLE hThread = CreateRemoteThread(hProc, NULL, 0,
-                                        (LPTHREAD_START_ROUTINE)loadLib,
-                                        remote, 0, NULL);
-    if (!hThread) return FALSE;
+    if (!loadLib) {
+        VirtualFreeEx(hProc, remote, 0, MEM_RELEASE);
+        return FALSE;
+    }
+    HANDLE hThread = CreateRemoteThread(
+        hProc, NULL, 0,
+        (LPTHREAD_START_ROUTINE)loadLib,
+        remote, 0, NULL
+    );
+    if (!hThread) {
+        VirtualFreeEx(hProc, remote, 0, MEM_RELEASE);
+        return FALSE;
+    }
     WaitForSingleObject(hThread, INFINITE);
-    VirtualFreeEx(hProc, remote, 0, MEM_RELEASE);
     CloseHandle(hThread);
+    VirtualFreeEx(hProc, remote, 0, MEM_RELEASE);
     return TRUE;
 }
 
 int main(int argc, char** argv) {
-    if (argc < 3) {
-        printf("Usage: %s <GameExePath|PID> <HookDLL1> [HookDLL2 ...]\n", argv[0]);
+    if (argc < 5) {
+        printf("Usage: %s <GameExePath|PID> <server.dll> <hook_server.dll> <hook_ws2_32.dll> <hook_kernel32.dll> [...]\n", argv[0]);
         return 1;
     }
 
-    HANDLE hProc = NULL;
+    // argv[2] ist jetzt Deine server.dll
+    const char* serverDll = argv[2];
+
+    // 1) PID-Mode oder Path-Mode
+    HANDLE hProc   = NULL, hThread = NULL;
+    PROCESS_INFORMATION pi = {0};
     BOOL launched = FALSE;
 
-    // 1) PID-Mode
     if (isNumber(argv[1])) {
         DWORD pid = strtoul(argv[1], NULL, 10);
-        printf("PID-Mode: Opening existing process %u\n", pid);
+        printf("[Injector] PID-Mode: OpenProcess(%u)\n", pid);
         hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-        if (!hProc) {
-            printf("OpenProcess failed: %u\n", GetLastError());
-            return 1;
-        }
-    }
-    // 2) Path-Mode
-    else {
-        printf("Path-Mode: Launching \"%s\" suspended\n", argv[1]);
+        if (!hProc) { printf("  OpenProcess failed: %u\n", GetLastError()); return 1; }
+    } else {
+        printf("[Injector] Path-Mode: CreateProcessA(\"%s\") suspended\n", argv[1]);
         STARTUPINFOA si = { sizeof(si) };
-        PROCESS_INFORMATION pi;
-        if (!CreateProcessA(argv[1], NULL, NULL, NULL, FALSE,
-                            CREATE_SUSPENDED|CREATE_NEW_CONSOLE,
-                            NULL, NULL, &si, &pi)) {
-            printf("CreateProcess failed: %u\n", GetLastError());
+        if (!CreateProcessA(
+                argv[1], NULL, NULL, NULL, FALSE,
+                CREATE_SUSPENDED|CREATE_NEW_CONSOLE,
+                NULL, NULL, &si, &pi)) 
+        {
+            printf("  CreateProcess failed: %u\n", GetLastError());
             return 1;
         }
-        hProc    = pi.hProcess;
+        hProc   = pi.hProcess;
+        hThread = pi.hThread;
         launched = TRUE;
     }
 
-    // 3) DLLs injizieren
-    for (int i = 2; i < argc; ++i) {
-        printf("Injecting: %s\n", argv[i]);
+    // 2) Zuerst server.dll laden
+    printf("[Injector] Loading server DLL: %s\n", serverDll);
+    if (!InjectDLL(hProc, serverDll)) {
+        printf("  Failed to load %s: %u\n", serverDll, GetLastError());
+        goto cleanup;
+    }
+
+    // 3) Dann alle weiteren Hook-DLLs ab argv[3]
+    for (int i = 3; i < argc; ++i) {
+        printf("[Injector] Injecting hook: %s\n", argv[i]);
         if (!InjectDLL(hProc, argv[i])) {
-            printf("Injection of %s failed: %u\n", argv[i], GetLastError());
-            if (launched) TerminateProcess(hProc, 1);
-            CloseHandle(hProc);
-            return 1;
+            printf("  Injection of %s failed: %u\n", argv[i], GetLastError());
+            goto cleanup;
         }
     }
 
-    // 4) Game-Process weiterspielen lassen
+    // 4) Im Path-Mode den Haupt-Thread fortsetzen
     if (launched) {
-        // Die richtige Thread-ID kannst Du per ProcessInformation speichern
-        ResumeThread(((PROCESS_INFORMATION*)&hProc)->hThread);
+        printf("[Injector] Resuming main thread\n");
+        ResumeThread(hThread);
     }
-    CloseHandle(hProc);
+
+cleanup:
+    if (hThread) CloseHandle(hThread);
+    if (hProc)   CloseHandle(hProc);
     return 0;
 }

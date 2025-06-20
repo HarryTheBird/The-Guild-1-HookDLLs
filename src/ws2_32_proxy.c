@@ -18,23 +18,38 @@
 #pragma comment(lib, "legacy_stdio_definitions.lib")  // für _snprintf_s
 
 // -----------------------------------------------------------------------------
-// Logging
-static HANDLE logFile = INVALID_HANDLE_VALUE;
+// Logging mit Zeilenzähler und Roll-Over
+static HANDLE           logFile       = INVALID_HANDLE_VALUE;
 static CRITICAL_SECTION logLock;
+static UINT32           logLineCount  = 0;      // Anzahl geschriebener Zeilen
 
-#define LOG(fmt, ...)                                         \
-    do {                                                      \
-        EnterCriticalSection(&logLock);                       \
-        if (logFile != INVALID_HANDLE_VALUE) {                \
-            char _buf[256];                                   \
-            int  _len = _snprintf_s(                          \
-                _buf, sizeof(_buf), _TRUNCATE,                \
-                fmt, __VA_ARGS__                             \
-            );                                                \
-            DWORD _w;                                         \
-            WriteFile(logFile, _buf, _len, &_w, NULL);        \
-        }                                                     \
-        LeaveCriticalSection(&logLock);                       \
+// Hilfsroutine: Logdatei zurücksetzen
+static void ResetLogFile(void) {
+    // Setzt den Dateizeiger auf 0 und kürzt die Datei
+    SetFilePointer(logFile, 0, NULL, FILE_BEGIN);
+    SetEndOfFile(logFile);
+    logLineCount = 0;
+}
+
+// Neues LOG-Macro mit Zeilenlimit
+#define LOG(fmt, ...)                                              \
+    do {                                                           \
+        EnterCriticalSection(&logLock);                            \
+        if (logFile != INVALID_HANDLE_VALUE) {                     \
+            /* Roll-Over prüfen */                                 \
+            if (++logLineCount > 200) {                            \
+                ResetLogFile();                                    \
+            }                                                      \
+            /* Log-Zeile schreiben */                              \
+            char _buf[256];                                        \
+            int  _len = _snprintf_s(                               \
+                _buf, sizeof(_buf), _TRUNCATE,                     \
+                fmt, __VA_ARGS__                                   \
+            );                                                     \
+            DWORD _w;                                              \
+            WriteFile(logFile, _buf, _len, &_w, NULL);             \
+        }                                                          \
+        LeaveCriticalSection(&logLock);                            \
     } while (0)
 // -----------------------------------------------------------------------------
 
@@ -146,7 +161,7 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID _) {
         wchar_t path[MAX_PATH];
         GetModuleFileNameW(hinst, path, MAX_PATH);
         PathRemoveFileSpecW(path);
-        wcscat_s(path, MAX_PATH, L"\\hook.log");
+        wcscat_s(path, MAX_PATH, L"\\hook_ws2_32.log");
         logFile = CreateFileW(
             path,
             GENERIC_WRITE,

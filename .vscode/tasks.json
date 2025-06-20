@@ -19,7 +19,7 @@
           "MinHook.x86.lib",
           "kernel32.lib",
           // DEF und Output
-          "/DEF:${workspaceFolder}\\kernel32.def",
+          "/DEF:${workspaceFolder}\\kernel32\\kernel32.def",
           "/OUT:${workspaceFolder}\\bin\\hook_kernel32.dll"
       ],
       "options": {
@@ -43,7 +43,7 @@
           "Ws2_32.lib",
           "Shlwapi.lib",
           "User32.lib",
-          "/DEF:${workspaceFolder}\\ws2_32.def",
+          "/DEF:${workspaceFolder}\\ws2_32\\ws2_32.def",
           "/OUT:${workspaceFolder}\\bin\\hook_ws2_32.dll"
       ],
       "options": {
@@ -51,12 +51,34 @@
       },
       "group":{"kind":"build"},
       "problemMatcher":["$msCompile"]
+    },
+    {
+  "label": "Build hook_server.dll",
+  "type": "shell",
+  "command": "cl",
+  "args": [
+    "/LD",
+    "src\\server_proxy.c",
+    "/Iextern\\minhook\\include",
+    "/link",
+          "/LIBPATH:${workspaceFolder}\\MinHook\\lib",
+          "MinHook.x86.lib",
+          "Shlwapi.lib",
+          "legacy_stdio_definitions.lib",
+    "/OUT:bin\\hook_server.dll"
+  ],
+  "options": { "cwd": "${workspaceFolder}" },
+  "problemMatcher": ["$msCompile"]
+  },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$msCompile"]
     },  
       {
       "label": "Build All Proxies",
       "dependsOn": [
         "Build ws2_32 proxy",
         "Build kernel32 proxy"
+        "Build server proxy"
       ],
       "group": { "kind": "build", "isDefault": false }}
   ]
