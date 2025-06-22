@@ -65,7 +65,8 @@ $(BUILD_DIR)/hook_%.dll: $(SRC_DIR)/%_proxy.c $(MINHOOK_LIB)
 install: all
 	@echo "Installing artifacts to $(RELEASE_DIR)..."
 	@cp $(INJECTOR_EXE) $(RELEASE_DIR)/
-	@cp $(BUILD_DIR)/hook_*.dll $(RELEASE_DIR)/server/
+	@mkdir -p $(RELEASE_DIR)/Server
+	@cp $(BUILD_DIR)/hook_*.dll $(RELEASE_DIR)/Server/
 	@echo "Installation complete."
 
 # Create a distributable zip file
@@ -79,7 +80,7 @@ clean:
 	@echo "Cleaning build artifacts..."
 	@rm -rf $(BUILD_DIR)
 	@rm -f $(RELEASE_DIR)/injector.exe
-	@rm -f $(RELEASE_DIR)/server/hook_*.dll
+	@rm -f $(RELEASE_DIR)/Server/hook_*.dll
 	@rm -f The-Guild-1-HookDLLs.zip
 	@echo "Clean complete."
 
