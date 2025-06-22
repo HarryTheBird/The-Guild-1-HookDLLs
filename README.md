@@ -11,7 +11,7 @@ This project was created to fix those issues by intercepting and patching the pr
 ### Technical background
 - The original `server.dll` expects perfect packet delivery and will desync or crash on any network hiccup.
 - The hook-DLLs intercept calls to Windows APIs (like those in `ws2_32.dll` and `kernel32.dll`) and patch or work around the problematic logic.
-- This approach was inspired by community research and reverse engineering (see guides by Atexer and lycanthrope).
+- This approach was inspired by community research and reverse engineering.
 - The solution is non-invasive: if you want to revert, just remove the DLLs and injector.
 
 ## Who is this for?
@@ -71,9 +71,6 @@ This project was created to fix those issues by intercepting and patching the pr
 - All DLLs are cross-compiled for Windows (x86) from Linux.
 - MinHook is built from source automatically; no CMake required.
 - If you update MinHook, re-run `git submodule update --remote` and rebuild.
-
-## About `exports.txt`
-If `exports.txt` is a reference or documentation file, consider moving it to a `misc/` or `docs/` folder for clarity. If it's required for the build or packaging, document its purpose here.
 
 ## DLL Export Definition Files (.def)
 - The `docs/kernel32.def` and `docs/ws2_32.def` files list the exports of the original Windows DLLs (`kernel32.dll`, `ws2_32.dll`).
