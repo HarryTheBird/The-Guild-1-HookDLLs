@@ -10,37 +10,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "MinHook.h"
+#include "hooklog.h"
 
 #pragma comment(lib, "MinHook.x86.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Psapi.lib")
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "legacy_stdio_definitions.lib")  // für _snprintf_s
-
-// -----------------------------------------------------------------------------
-// Logging mit Zeilenzähler und Roll-Over
-static HANDLE           logFile       = INVALID_HANDLE_VALUE;
-static CRITICAL_SECTION logLock;
-static UINT32           logLineCount  = 0;      // Anzahl geschriebener Zeilen
-
-// Hilfsroutine: Logdatei zurücksetzen
-static void ResetLogFile(void) {
-    // Setzt den Dateizeiger auf 0 und kürzt die Datei
-    SetFilePointer(logFile, 0, NULL, FILE_BEGIN);
-    SetEndOfFile(logFile);
-    logLineCount = 0;
-}
-
-// Neues LOG-Macro mit Zeilenlimit
-#ifdef LOG
-#undef LOG
-#endif
-#define LOG(fmt, ...) do { \
-    char _buf[512]; \
-    snprintf(_buf, sizeof(_buf), fmt, ##__VA_ARGS__); \
-    OutputDebugStringA(_buf); \
-} while(0)
-// -----------------------------------------------------------------------------
 
 // Original-Zeiger
 static int (WINAPI *real_recv)(SOCKET, char*, int, int)   = NULL;

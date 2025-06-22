@@ -5,22 +5,13 @@
 #include <shlwapi.h>
 #include "MinHook.h"   // MinHook-Header
 #include <stdio.h>
+#include "hooklog.h"
 
 #pragma comment(lib, "MinHook.x86.lib")  // oder MinHook.x64.lib
 #pragma comment(lib, "Shlwapi.lib")
 
 // -----------------------------------------------------------------------------
 // Logging
-static HANDLE logFile = INVALID_HANDLE_VALUE;
-static CRITICAL_SECTION logLock;
-#ifdef LOG
-#undef LOG
-#endif
-#define LOG(fmt, ...) do { \
-    char _buf[512]; \
-    snprintf(_buf, sizeof(_buf), fmt, ##__VA_ARGS__); \
-    OutputDebugStringA(_buf); \
-} while(0)
 
 // -----------------------------------------------------------------------------
 // Prototypen der Original-Funktionen in server.dll
