@@ -11,3 +11,6 @@ bin/
 .vscode/
 c_cpp_properties.json
 launch.json
+
+# Do NOT ignore the original server.dll in release/server/
+!release/server/server.dll

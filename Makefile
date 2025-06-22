@@ -31,8 +31,12 @@ SERVER_DLL = $(BUILD_DIR)/hook_server.dll
 WS2_32_SRC = $(SRC_DIR)/ws2_32_proxy.c
 WS2_32_DLL = $(BUILD_DIR)/hook_ws2_32.dll
 
+# Ensure submodule is initialized and up to date
+submodule:
+	@git submodule update --init --recursive
+
 # Default target
-all: $(INJECTOR_EXE) $(KERNEL32_DLL) $(SERVER_DLL) $(WS2_32_DLL)
+all: submodule $(INJECTOR_EXE) $(KERNEL32_DLL) $(SERVER_DLL) $(WS2_32_DLL)
 
 # Rule to build the injector
 $(INJECTOR_EXE): $(INJECTOR_SRC)
@@ -79,4 +83,4 @@ clean:
 	@rm -f The-Guild-1-HookDLLs.zip
 	@echo "Clean complete."
 
-.PHONY: all clean install package 
+.PHONY: all clean install package submodule 
