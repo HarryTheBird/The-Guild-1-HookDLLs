@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <shlwapi.h>
 #include "MinHook.h"   // MinHook-Header
+#include <stdio.h>
 
 #pragma comment(lib, "MinHook.x86.lib")  // oder MinHook.x64.lib
 #pragma comment(lib, "Shlwapi.lib")
@@ -12,18 +13,14 @@
 // Logging
 static HANDLE logFile = INVALID_HANDLE_VALUE;
 static CRITICAL_SECTION logLock;
-#define LOG(fmt, ...)                                         \
-    do {                                                      \
-        EnterCriticalSection(&logLock);                       \
-        if (logFile != INVALID_HANDLE_VALUE) {                \
-            char _buf[256];                                   \
-            int  _len = _snprintf_s(_buf, sizeof(_buf),      \
-                                   _TRUNCATE, fmt, __VA_ARGS__); \
-            DWORD _w;                                         \
-            WriteFile(logFile, _buf, _len, &_w, NULL);        \
-        }                                                     \
-        LeaveCriticalSection(&logLock);                       \
-    } while (0)
+#ifdef LOG
+#undef LOG
+#endif
+#define LOG(fmt, ...) do { \
+    char _buf[512]; \
+    snprintf(_buf, sizeof(_buf), fmt, ##__VA_ARGS__); \
+    OutputDebugStringA(_buf); \
+} while(0)
 
 // -----------------------------------------------------------------------------
 // Prototypen der Original-Funktionen in server.dll

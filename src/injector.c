@@ -57,9 +57,9 @@ int main(int argc, char** argv) {
 
     if (isNumber(argv[1])) {
         DWORD pid = strtoul(argv[1], NULL, 10);
-        printf("[Injector] PID-Mode: OpenProcess(%u)\n", pid);
+        printf("[Injector] PID-Mode: OpenProcess(%lu)\n", pid);
         hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-        if (!hProc) { printf("  OpenProcess failed: %u\n", GetLastError()); return 1; }
+        if (!hProc) { printf("  OpenProcess failed: %lu\n", GetLastError()); return 1; }
     } else {
         printf("[Injector] Path-Mode: CreateProcessA(\"%s\") suspended\n", argv[1]);
         STARTUPINFOA si = { sizeof(si) };
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
                 CREATE_SUSPENDED|CREATE_NEW_CONSOLE,
                 NULL, NULL, &si, &pi)) 
         {
-            printf("  CreateProcess failed: %u\n", GetLastError());
+            printf("  CreateProcess failed: %lu\n", GetLastError());
             return 1;
         }
         hProc   = pi.hProcess;
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
     // 2) Zuerst server.dll laden
     printf("[Injector] Loading server DLL: %s\n", serverDll);
     if (!InjectDLL(hProc, serverDll)) {
-        printf("  Failed to load %s: %u\n", serverDll, GetLastError());
+        printf("  Failed to load %s: %lu\n", serverDll, GetLastError());
         goto cleanup;
     }
 
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     for (int i = 3; i < argc; ++i) {
         printf("[Injector] Injecting hook: %s\n", argv[i]);
         if (!InjectDLL(hProc, argv[i])) {
-            printf("  Injection of %s failed: %u\n", argv[i], GetLastError());
+            printf("  Injection of %s failed: %lu\n", argv[i], GetLastError());
             goto cleanup;
         }
     }

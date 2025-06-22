@@ -32,25 +32,14 @@ static void ResetLogFile(void) {
 }
 
 // Neues LOG-Macro mit Zeilenlimit
-#define LOG(fmt, ...)                                              \
-    do {                                                           \
-        EnterCriticalSection(&logLock);                            \
-        if (logFile != INVALID_HANDLE_VALUE) {                     \
-            /* Roll-Over prüfen */                                 \
-            if (++logLineCount > 200) {                            \
-                ResetLogFile();                                    \
-            }                                                      \
-            /* Log-Zeile schreiben */                              \
-            char _buf[256];                                        \
-            int  _len = _snprintf_s(                               \
-                _buf, sizeof(_buf), _TRUNCATE,                     \
-                fmt, __VA_ARGS__                                   \
-            );                                                     \
-            DWORD _w;                                              \
-            WriteFile(logFile, _buf, _len, &_w, NULL);             \
-        }                                                          \
-        LeaveCriticalSection(&logLock);                            \
-    } while (0)
+#ifdef LOG
+#undef LOG
+#endif
+#define LOG(fmt, ...) do { \
+    char _buf[512]; \
+    snprintf(_buf, sizeof(_buf), fmt, ##__VA_ARGS__); \
+    OutputDebugStringA(_buf); \
+} while(0)
 // -----------------------------------------------------------------------------
 
 // Original-Zeiger

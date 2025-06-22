@@ -1,1 +1,13 @@
-ignores/
+# Build artifacts
+build/
+*.obj
+*.lib
+*.exp
+*.exe
+*.dll
+bin/
+
+# VSCode
+.vscode/
+c_cpp_properties.json
+launch.json
